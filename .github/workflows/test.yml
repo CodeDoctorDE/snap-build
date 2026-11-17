@@ -27,22 +27,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - project: core20
-            snapcraft-channel: 8.x/stable
-          - project: core22
-            snapcraft-channel: stable
-          - project: core24
-            snapcraft-channel: stable
-          - project: core26
-            snapcraft-channel: stable
+        project:
+          - core22
+          - core24
+          - core26
     steps:
     - uses: actions/checkout@v7.0.1
     - uses: ./
       id: snapcraft
       with:
         path: './test-projects/${{ matrix.project }}'
-        snapcraft-channel: ${{ matrix.snapcraft-channel }}
         snapcraft-args: pack
     - uses: actions/upload-artifact@v7.0.2
       with:

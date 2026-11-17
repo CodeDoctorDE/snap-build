@@ -1,7 +1,7 @@
 // -*- mode: javascript; js-indent-level: 2 -*-
 
 import * as core from '@actions/core'
-import {SnapcraftBuilder} from './build'
+import {SnapcraftBuilder} from './build.js'
 
 async function run(): Promise<void> {
   try {

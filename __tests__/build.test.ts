@@ -1,15 +1,19 @@
 // -*- mode: javascript; js-indent-level: 2 -*-
 
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
-import * as process from 'process'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+import * as process from 'node:process'
 import * as exec from '@actions/exec'
-import * as build from '../src/build'
-import * as tools from '../src/tools'
+import * as build from '../src/build.js'
+import * as tools from '../src/tools.js'
+import {afterEach, expect, test, vi} from 'vitest'
+
+vi.mock('@actions/exec', {spy: true})
+vi.mock('../src/tools.js', {spy: true})
 
 afterEach(() => {
-  jest.restoreAllMocks()
+  vi.restoreAllMocks()
 })
 
 test('SnapcraftBuilder expands tilde in project root', () => {
@@ -35,16 +39,16 @@ test('SnapcraftBuilder expands tilde in project root', () => {
 test('SnapcraftBuilder.build runs a snap build', async () => {
   expect.assertions(4)
 
-  const ensureSnapd = jest
+  const ensureSnapd = vi
     .spyOn(tools, 'ensureSnapd')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureLXD = jest
+  const ensureLXD = vi
     .spyOn(tools, 'ensureLXD')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureSnapcraft = jest
+  const ensureSnapcraft = vi
     .spyOn(tools, 'ensureSnapcraft')
     .mockImplementation(async (channel): Promise<void> => {})
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -70,7 +74,15 @@ test('SnapcraftBuilder.build runs a snap build', async () => {
   expect(ensureSnapcraft).toHaveBeenCalled()
   expect(execMock).toHaveBeenCalledWith(
     'sudo',
-    ['-u', user, '-E', 'snapcraft'],
+    [
+      '-u',
+      user,
+      expect.stringMatching(
+        /^--preserve-env=.*SNAPCRAFT_BUILD_ENVIRONMENT.*SNAPCRAFT_BUILD_INFO/
+      ),
+      '--',
+      '/snap/bin/snapcraft'
+    ],
     {
       cwd: projectDir,
       env: expect.objectContaining({
@@ -86,16 +98,16 @@ test('SnapcraftBuilder.build runs a snap build', async () => {
 test('SnapcraftBuilder.build can disable build info', async () => {
   expect.assertions(1)
 
-  const ensureSnapd = jest
+  const ensureSnapd = vi
     .spyOn(tools, 'ensureSnapd')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureLXD = jest
+  const ensureLXD = vi
     .spyOn(tools, 'ensureLXD')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureSnapcraft = jest
+  const ensureSnapcraft = vi
     .spyOn(tools, 'ensureSnapcraft')
     .mockImplementation(async (channel): Promise<void> => {})
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -124,16 +136,16 @@ test('SnapcraftBuilder.build can disable build info', async () => {
 test('SnapcraftBuilder.build can set the Snapcraft channel', async () => {
   expect.assertions(1)
 
-  const ensureSnapd = jest
+  const ensureSnapd = vi
     .spyOn(tools, 'ensureSnapd')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureLXD = jest
+  const ensureLXD = vi
     .spyOn(tools, 'ensureLXD')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureSnapcraft = jest
+  const ensureSnapcraft = vi
     .spyOn(tools, 'ensureSnapcraft')
     .mockImplementation(async (channel): Promise<void> => {})
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -156,16 +168,16 @@ test('SnapcraftBuilder.build can set the Snapcraft channel', async () => {
 test('SnapcraftBuilder.build can pass additional arguments', async () => {
   expect.assertions(1)
 
-  const ensureSnapd = jest
+  const ensureSnapd = vi
     .spyOn(tools, 'ensureSnapd')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureLXD = jest
+  const ensureLXD = vi
     .spyOn(tools, 'ensureLXD')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureSnapcraft = jest
+  const ensureSnapcraft = vi
     .spyOn(tools, 'ensureSnapcraft')
     .mockImplementation(async (channel): Promise<void> => {})
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -185,7 +197,15 @@ test('SnapcraftBuilder.build can pass additional arguments', async () => {
   const user = os.userInfo().username
   expect(execMock).toHaveBeenCalledWith(
     'sudo',
-    ['-u', user, '-E', 'snapcraft', '--foo', '--bar'],
+    [
+      '-u',
+      user,
+      expect.stringContaining('--preserve-env='),
+      '--',
+      '/snap/bin/snapcraft',
+      '--foo',
+      '--bar'
+    ],
     expect.anything()
   )
 })
@@ -193,16 +213,16 @@ test('SnapcraftBuilder.build can pass additional arguments', async () => {
 test('SnapcraftBuilder.build can pass UA token', async () => {
   expect.assertions(1)
 
-  const ensureSnapd = jest
+  const ensureSnapd = vi
     .spyOn(tools, 'ensureSnapd')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureLXD = jest
+  const ensureLXD = vi
     .spyOn(tools, 'ensureLXD')
     .mockImplementation(async (): Promise<void> => {})
-  const ensureSnapcraft = jest
+  const ensureSnapcraft = vi
     .spyOn(tools, 'ensureSnapcraft')
     .mockImplementation(async (channel): Promise<void> => {})
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -222,7 +242,15 @@ test('SnapcraftBuilder.build can pass UA token', async () => {
   const user = os.userInfo().username
   expect(execMock).toHaveBeenCalledWith(
     'sudo',
-    ['-u', user, '-E', 'snapcraft', '--ua-token', 'test-ua-token'],
+    [
+      '-u',
+      user,
+      expect.stringContaining('--preserve-env='),
+      '--',
+      '/snap/bin/snapcraft',
+      '--ua-token',
+      'test-ua-token'
+    ],
     expect.anything()
   )
 })
@@ -239,7 +267,7 @@ test('SnapcraftBuilder.outputSnap fails if there are no snaps', async () => {
     uaToken: ''
   })
 
-  const readdir = jest
+  const readdir = vi
     .spyOn(builder, '_readdir')
     .mockImplementation(async (path: string): Promise<string[]> => [
       'not-a-snap'
@@ -263,7 +291,7 @@ test('SnapcraftBuilder.outputSnap returns the first snap', async () => {
     uaToken: ''
   })
 
-  const readdir = jest
+  const readdir = vi
     .spyOn(builder, '_readdir')
     .mockImplementation(async (path: string): Promise<string[]> => [
       'one.snap',

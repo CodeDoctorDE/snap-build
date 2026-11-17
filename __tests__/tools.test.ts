@@ -1,20 +1,24 @@
 // -*- mode: javascript; js-indent-level: 2 -*-
 
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
-import * as tools from '../src/tools'
+import * as tools from '../src/tools.js'
+import {afterEach, expect, test, vi} from 'vitest'
+
+vi.mock('@actions/exec', {spy: true})
+vi.mock('@actions/core', {spy: true})
 
 afterEach(() => {
-  jest.restoreAllMocks()
+  vi.restoreAllMocks()
 })
 
 test('ensureSnapd installs snapd if needed', async () => {
   expect.assertions(4)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -24,12 +28,12 @@ test('ensureSnapd installs snapd if needed', async () => {
         throw new Error('not found')
       }
     )
-  const statMock = jest
+  const statMock = vi
     .spyOn(fs.promises, 'stat')
     .mockImplementation(async (filename: fs.PathLike): Promise<fs.Stats> => {
-      return Object.assign(fs.statSync(__filename), {uid: 0, gid: 0})
+      return Object.assign(fs.statSync(import.meta.filename), {uid: 0, gid: 0})
     })
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -57,7 +61,7 @@ test('ensureSnapd installs snapd if needed', async () => {
 test('ensureSnapd is a no-op if snapd is installed', async () => {
   expect.assertions(3)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -65,12 +69,12 @@ test('ensureSnapd is a no-op if snapd is installed', async () => {
         mode?: number | undefined
       ): Promise<void> => {}
     )
-  const statMock = jest
+  const statMock = vi
     .spyOn(fs.promises, 'stat')
     .mockImplementation(async (filename: fs.PathLike): Promise<fs.Stats> => {
-      return Object.assign(fs.statSync(__filename), {uid: 0, gid: 0})
+      return Object.assign(fs.statSync(import.meta.filename), {uid: 0, gid: 0})
     })
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -88,7 +92,7 @@ test('ensureSnapd is a no-op if snapd is installed', async () => {
 test('ensureSnapd fixes permissions on the root directory', async () => {
   expect.assertions(3)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -96,12 +100,15 @@ test('ensureSnapd fixes permissions on the root directory', async () => {
         mode?: number | undefined
       ): Promise<void> => {}
     )
-  const statMock = jest
+  const statMock = vi
     .spyOn(fs.promises, 'stat')
     .mockImplementation(async (filename: fs.PathLike): Promise<fs.Stats> => {
-      return Object.assign(fs.statSync(__filename), {uid: 500, gid: 0})
+      return Object.assign(fs.statSync(import.meta.filename), {
+        uid: 500,
+        gid: 0
+      })
     })
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -119,7 +126,7 @@ test('ensureSnapd fixes permissions on the root directory', async () => {
 test('ensureLXD installs the snap version of LXD if needed', async () => {
   expect.assertions(5)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -129,7 +136,7 @@ test('ensureLXD installs the snap version of LXD if needed', async () => {
         throw new Error('not found')
       }
     )
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -164,7 +171,7 @@ test('ensureLXD installs the snap version of LXD if needed', async () => {
 test('ensureLXD removes the apt version of LXD', async () => {
   expect.assertions(2)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -174,7 +181,7 @@ test('ensureLXD removes the apt version of LXD', async () => {
         return
       }
     )
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -197,7 +204,7 @@ test('ensureLXD removes the apt version of LXD', async () => {
 test('ensureLXD still calls "lxd init" if LXD is installed', async () => {
   expect.assertions(5)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -210,7 +217,7 @@ test('ensureLXD still calls "lxd init" if LXD is installed', async () => {
         throw new Error('not found')
       }
     )
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -245,7 +252,7 @@ test('ensureLXD still calls "lxd init" if LXD is installed', async () => {
 test('ensureSnapcraft installs Snapcraft if needed', async () => {
   expect.assertions(2)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -255,7 +262,7 @@ test('ensureSnapcraft installs Snapcraft if needed', async () => {
         throw new Error('not found')
       }
     )
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -279,7 +286,7 @@ test('ensureSnapcraft installs Snapcraft if needed', async () => {
 test('ensureSnapcraft refreshes if Snapcraft is installed', async () => {
   expect.assertions(2)
 
-  const accessMock = jest
+  const accessMock = vi
     .spyOn(fs.promises, 'access')
     .mockImplementation(
       async (
@@ -289,7 +296,7 @@ test('ensureSnapcraft refreshes if Snapcraft is installed', async () => {
         return
       }
     )
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -313,11 +320,11 @@ test('ensureSnapcraft refreshes if Snapcraft is installed', async () => {
 test('ensureLXDNetwork sets up iptables and warns about Docker', async () => {
   expect.assertions(8)
 
-  const infoMock = jest
+  const infoMock = vi
     .spyOn(core, 'info')
     .mockImplementation((info: string) => {})
 
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {
@@ -371,10 +378,10 @@ test('ensureLXDNetwork sets up iptables and warns about Docker', async () => {
 test('ensureLXDNetwork sets up iptables and warns only about installed packages', async () => {
   expect.assertions(8)
 
-  const infoMock = jest
+  const infoMock = vi
     .spyOn(core, 'info')
     .mockImplementation((info: string) => {})
-  const execMock = jest
+  const execMock = vi
     .spyOn(exec, 'exec')
     .mockImplementation(
       async (program: string, args?: string[]): Promise<number> => {

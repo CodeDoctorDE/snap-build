@@ -2,11 +2,11 @@
 
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
-import * as process from 'process'
-import * as tools from './tools'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+import * as process from 'node:process'
+import * as tools from './tools.js'
 
 interface ImageInfo {
   'build-request-id'?: string
@@ -63,7 +63,7 @@ export class SnapcraftBuilder {
       env['SNAPCRAFT_BUILD_INFO'] = '1'
     }
 
-    const snapcraft = ['snapcraft']
+    const snapcraft = ['/snap/bin/snapcraft']
     if (this.snapcraftArgs) {
       snapcraft.push(...this.snapcraftArgs.split(/\s+/))
     }
@@ -71,11 +71,17 @@ export class SnapcraftBuilder {
       snapcraft.push('--ua-token', this.uaToken)
     }
 
+    // Start a new session for the runner's LXD membership. Ubuntu 26.04's
+    // sudo ignores -E, so preserve the environment variables Snapcraft needs.
+    const preserveEnv = Object.keys(env)
+      .filter(name => /^(?:snapcraft_|craft_|(?:https?|no)_proxy$)/i.test(name))
+      .join(',')
     const user = os.userInfo().username
-    await exec.exec('sudo', ['-u', user, '-E'].concat(snapcraft), {
-      cwd: this.projectRoot,
-      env
-    })
+    await exec.exec(
+      'sudo',
+      ['-u', user, `--preserve-env=${preserveEnv}`, '--', ...snapcraft],
+      {cwd: this.projectRoot, env}
+    )
   }
 
   // This wrapper is for the benefit of the tests, due to the crazy

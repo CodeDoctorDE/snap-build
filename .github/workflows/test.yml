@@ -11,10 +11,10 @@ on: # rebuild any PRs and main branch changes
 
 jobs:
   unit: # make sure build/ci work properly
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-node@v7
+    - uses: actions/checkout@v7.0.1
+    - uses: actions/setup-node@v7.1.0
       with:
         node-version: '24'
         cache: npm
@@ -23,7 +23,7 @@ jobs:
     - run: git diff --exit-code -- dist
 
   integration: # make sure the action works on a clean machine without building
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -34,35 +34,17 @@ jobs:
             snapcraft-channel: stable
           - project: core24
             snapcraft-channel: stable
+          - project: core26
+            snapcraft-channel: stable
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v7.0.1
     - uses: ./
       id: snapcraft
       with:
         path: './test-projects/${{ matrix.project }}'
         snapcraft-channel: ${{ matrix.snapcraft-channel }}
         snapcraft-args: pack
-    - uses: actions/upload-artifact@v7
-      with:
-        name: 'snap-${{ matrix.project }}'
-        path: ${{ steps.snapcraft.outputs.snap}}
-        compression-level: 0
-        retention-days: 7
-
-  integration-legacy: # make sure the action works on a clean machine without building
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        project:
-          - core
-    steps:
-    - uses: actions/checkout@v7
-    - uses: ./
-      id: snapcraft
-      with:
-        path: './test-projects/${{ matrix.project }}'
-        snapcraft-channel: 4.x/stable
-    - uses: actions/upload-artifact@v7
+    - uses: actions/upload-artifact@v7.0.2
       with:
         name: 'snap-${{ matrix.project }}'
         path: ${{ steps.snapcraft.outputs.snap}}
@@ -72,10 +54,9 @@ jobs:
   collect-artifacts:
     needs:
       - integration
-      - integration-legacy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-    - uses: actions/upload-artifact/merge@v7
+    - uses: actions/upload-artifact/merge@v7.0.2
       with:
         name: snap
         pattern: snap-*
@@ -86,11 +67,12 @@ jobs:
     strategy:
       matrix:
         runner:
-          - ubuntu-22.04
           - ubuntu-24.04
+          - ubuntu-26.04
     runs-on: ${{ matrix.runner }}
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v7.0.1
     - uses: ./
       with:
         path: './test-projects/core22'
+        snapcraft-args: pack

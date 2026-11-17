@@ -25,17 +25,23 @@ jobs:
   integration: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        project:
-          - core20
-          - core22
-          - core24
+        include:
+          - project: core20
+            snapcraft-channel: 8.x/stable
+          - project: core22
+            snapcraft-channel: stable
+          - project: core24
+            snapcraft-channel: stable
     steps:
     - uses: actions/checkout@v7
     - uses: ./
       id: snapcraft
       with:
         path: './test-projects/${{ matrix.project }}'
+        snapcraft-channel: ${{ matrix.snapcraft-channel }}
+        snapcraft-args: pack
     - uses: actions/upload-artifact@v7
       with:
         name: 'snap-${{ matrix.project }}'

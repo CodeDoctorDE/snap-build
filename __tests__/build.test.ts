@@ -241,9 +241,9 @@ test('SnapcraftBuilder.outputSnap fails if there are no snaps', async () => {
 
   const readdir = jest
     .spyOn(builder, '_readdir')
-    .mockImplementation(
-      async (path: string): Promise<string[]> => ['not-a-snap']
-    )
+    .mockImplementation(async (path: string): Promise<string[]> => [
+      'not-a-snap'
+    ])
 
   await expect(builder.outputSnap()).rejects.toThrow(
     'No snap files produced by build'
@@ -265,9 +265,10 @@ test('SnapcraftBuilder.outputSnap returns the first snap', async () => {
 
   const readdir = jest
     .spyOn(builder, '_readdir')
-    .mockImplementation(
-      async (path: string): Promise<string[]> => ['one.snap', 'two.snap']
-    )
+    .mockImplementation(async (path: string): Promise<string[]> => [
+      'one.snap',
+      'two.snap'
+    ])
 
   await expect(builder.outputSnap()).resolves.toEqual('project-root/one.snap')
   expect(readdir).toHaveBeenCalled()

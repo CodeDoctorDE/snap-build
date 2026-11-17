@@ -8,7 +8,7 @@ import * as os from 'os'
 async function haveExecutable(path: string): Promise<boolean> {
   try {
     await fs.promises.access(path, fs.constants.X_OK)
-  } catch (err) {
+  } catch {
     return false
   }
   return true
@@ -77,7 +77,7 @@ export async function ensureLXD(): Promise<void> {
   if (haveSnapLXD) {
     try {
       await exec.exec('sudo', ['snap', 'refresh', 'lxd'])
-    } catch (err) {
+    } catch {
       core.info('LXD could not be refreshed...')
     }
   } else {

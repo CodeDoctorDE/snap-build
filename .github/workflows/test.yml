@@ -5,6 +5,7 @@ on: # rebuild any PRs and main branch changes
     branches:
       - master
       - 'releases/*'
+      - 'deps/**'
   schedule:
     - cron: '0 9 * * *'
 
@@ -12,10 +13,14 @@ jobs:
   unit: # make sure build/ci work properly
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - run: |
-        npm install
-        npm run all
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '24'
+        cache: npm
+    - run: npm ci
+    - run: npm run all
+    - run: git diff --exit-code -- dist
 
   integration: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
@@ -26,12 +31,12 @@ jobs:
           - core22
           - core24
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: ./
       id: snapcraft
       with:
         path: './test-projects/${{ matrix.project }}'
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: 'snap-${{ matrix.project }}'
         path: ${{ steps.snapcraft.outputs.snap}}
@@ -39,19 +44,19 @@ jobs:
         retention-days: 7
 
   integration-legacy: # make sure the action works on a clean machine without building
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         project:
           - core
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: ./
       id: snapcraft
       with:
         path: './test-projects/${{ matrix.project }}'
         snapcraft-channel: 4.x/stable
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: 'snap-${{ matrix.project }}'
         path: ${{ steps.snapcraft.outputs.snap}}
@@ -64,7 +69,7 @@ jobs:
       - integration-legacy
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/upload-artifact/merge@v4
+    - uses: actions/upload-artifact/merge@v7
       with:
         name: snap
         pattern: snap-*
@@ -75,12 +80,11 @@ jobs:
     strategy:
       matrix:
         runner:
-          - ubuntu-20.04
           - ubuntu-22.04
           - ubuntu-24.04
     runs-on: ${{ matrix.runner }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: ./
       with:
         path: './test-projects/core22'

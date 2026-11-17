@@ -9,11 +9,8 @@ import * as process from 'process'
 import * as tools from './tools'
 
 interface ImageInfo {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   'build-request-id'?: string
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   'build-request-timestamp'?: string
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   build_url?: string
 }
 
@@ -55,7 +52,6 @@ export class SnapcraftBuilder {
     core.endGroup()
 
     const imageInfo: ImageInfo = {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       build_url: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
     }
     // Copy and update environment to pass to snapcraft
